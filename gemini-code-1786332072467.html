@@ -200,40 +200,35 @@
     尊敬的员工您好，您已进入企业涉密区域，出于企业安全考虑，您的手机摄像头将被禁止拍摄，感谢您的配合。
   </div>
 
-  <script>
-    let qrCodeInstance;
-    let countdownValue = 12;
-    let countdownTimer;
+ <script>
+        let qrCodeInstance;
+        const MAX_SECONDS = 12 * 3600; // Giới hạn 12 tiếng
+        let timerValue = 0; // Bắt đầu từ 0
+        let countTimer;
 
-    function pad(num) {
-      return num < 10 ? '0' + num : num;
-    }
-
-    function updateRealTime() {
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = now.getMonth() + 1;
-      const day = now.getDate();
-      const hours = pad(now.getHours());
-      const minutes = pad(now.getMinutes());
-      const seconds = pad(now.getSeconds());
-      
-      document.getElementById('currentTime').textContent = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-    }
-
-    function startCountdown() {
-      clearInterval(countdownTimer);
-      countdownValue = 12;
-      updateCountdownDisplay();
-
-      countdownTimer = setInterval(() => {
-        countdownValue--;
-        if (countdownValue < 0) {
-          generateQRCode();
-        } else {
-          updateCountdownDisplay();
+        function pad(num) {
+            return num < 10 ? '0' + num : num;
         }
-      }, 1000);
+
+        function updateTime() {
+            const now = new Date();
+            const formatted = `${now.getFullYear()}-${now.getMonth() + 1}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+            document.getElementById('currentTime').textContent = formatted;
+        }
+
+        function startTimer() {
+            clearInterval(countTimer);
+            timerValue = 0; // Đặt lại về 00:00
+            updateTimerDisplay();
+
+            countTimer = setInterval(() => {
+                timerValue++;
+                if (timerValue > MAX_SECONDS) {
+                    generateQRCode(); // Đạt 12:00:00 thì reset và tạo QR mới
+                } else {
+                    updateTimerDisplay();
+                }
+            }, 1000);
     }
 
     function updateCountdownDisplay() {
