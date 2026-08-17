@@ -201,72 +201,271 @@
   </div>
 
  <script>
-        let qrCodeInstance;
-        const MAX_SECONDS = 12 * 3600; // Giới hạn 12 tiếng
-        let timerValue = 0; // Bắt đầu từ 0
-        let countTimer;
 
-        function pad(num) {
-            return num < 10 ? '0' + num : num;
+    let qrCodeInstance = null;
+
+    const MAX_SECONDS = 12 * 3600;
+
+    let timerValue = 0;
+
+    let countTimer = null;
+
+
+    /* ================================
+       FORMAT NUMBER
+    ================================= */
+
+    function pad(num) {
+        return num < 10 ? "0" + num : String(num);
+    }
+
+
+    /* ================================
+       HIỂN THỊ NGÀY GIỜ
+    ================================= */
+
+    function updateTime() {
+
+        const now = new Date();
+
+        const year = now.getFullYear();
+
+        const month = now.getMonth() + 1;
+
+        const day = now.getDate();
+
+        const hours = pad(now.getHours());
+
+        const minutes = pad(now.getMinutes());
+
+        const seconds = pad(now.getSeconds());
+
+
+        const formatted =
+            `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+
+
+        const timeElement =
+            document.getElementById("currentTime");
+
+
+        if (timeElement) {
+            timeElement.textContent = formatted;
         }
 
-        function updateTime() {
-            const now = new Date();
-            const formatted = `${now.getFullYear()}-${now.getMonth() + 1}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-            document.getElementById('currentTime').textContent = formatted;
+    }
+
+
+    /* ================================
+       COUNTDOWN
+    ================================= */
+
+    function updateTimerDisplay() {
+
+        const hours =
+            pad(Math.floor(timerValue / 3600));
+
+        const minutes =
+            pad(Math.floor((timerValue % 3600) / 60));
+
+        const seconds =
+            pad(timerValue % 60);
+
+
+        const countdown =
+            document.getElementById("countdown");
+
+
+        if (countdown) {
+
+            countdown.textContent =
+                `${hours}:${minutes}:${seconds}`;
+
         }
 
-        function startTimer() {
-            clearInterval(countTimer);
-            timerValue = 0; // Đặt lại về 00:00
+    }
+
+
+    /* ================================
+       START COUNTDOWN
+    ================================= */
+
+    function startTimer() {
+
+        clearInterval(countTimer);
+
+        timerValue = 0;
+
+        updateTimerDisplay();
+
+
+        countTimer = setInterval(function () {
+
+            timerValue++;
+
+
+            if (timerValue >= MAX_SECONDS) {
+
+                generateQRCode();
+
+                return;
+
+            }
+
+
             updateTimerDisplay();
 
-            countTimer = setInterval(() => {
-                timerValue++;
-                if (timerValue > MAX_SECONDS) {
-                    generateQRCode(); // Đạt 12:00:00 thì reset và tạo QR mới
-                } else {
-                    updateTimerDisplay();
-                }
-            }, 1000);
+        }, 1000);
+
     }
 
-    function updateCountdownDisplay() {
-      document.getElementById('countdown').textContent = `00:${pad(countdownValue)}`;
-    }
+
+    /* ================================
+       TẠO QR CODE
+    ================================= */
 
     function generateQRCode() {
-      const now = new Date();
-      const timeStr = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-      
-      const employeeId = "V25071461";
-      const employeeName = "Nguyễn Tuấn Việt";
-      const token = Math.random().toString(36).substring(2) + Date.now().toString(36);
-      const payload = `https://Wistron.com/access?id=${employeeId}&name=${encodeURIComponent(employeeName)}&time=${encodeURIComponent(timeStr)}&token=${token}`;
 
-      const container = document.getElementById('qrcode');
-      container.innerHTML = "";
+        const now = new Date();
 
-      qrCodeInstance = new QRCode(container, {
-        text: payload,
-        width: 215,
-        height: 215,
-        colorDark: "#000000",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.H
-      });
 
-      startCountdown();
+        const year =
+            now.getFullYear();
+
+        const month =
+            now.getMonth() + 1;
+
+        const day =
+            now.getDate();
+
+        const hours =
+            pad(now.getHours());
+
+        const minutes =
+            pad(now.getMinutes());
+
+        const seconds =
+            pad(now.getSeconds());
+
+
+        /*
+         * Thời gian hiển thị trên giao diện
+         */
+
+        const displayTime =
+            `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+
+
+        document.getElementById("currentTime")
+            .textContent = displayTime;
+
+
+        /*
+         * Thông tin nhân viên
+         */
+
+        const employeeId =
+            "V25071461";
+
+        const employeeName =
+            "Nguyễn Tuấn Việt";
+
+
+        /*
+         * Token mới
+         */
+
+        const token =
+            Math.random()
+                .toString(36)
+                .substring(2)
+            +
+            Date.now()
+                .toString(36);
+
+
+        /*
+         * Dữ liệu QR
+         */
+
+        const payload =
+            `https://Wistron.com/access` +
+            `?id=${encodeURIComponent(employeeId)}` +
+            `&name=${encodeURIComponent(employeeName)}` +
+            `&time=${encodeURIComponent(displayTime)}` +
+            `&token=${token}`;
+
+
+        /*
+         * QR container
+         */
+
+        const container =
+            document.getElementById("qrcode");
+
+
+        container.innerHTML = "";
+
+
+        qrCodeInstance =
+            new QRCode(container, {
+
+                text: payload,
+
+                width: 215,
+
+                height: 215,
+
+                colorDark: "#000000",
+
+                colorLight: "#ffffff",
+
+                correctLevel:
+                    QRCode.CorrectLevel.H
+
+            });
+
+
+        /*
+         * Reset countdown
+         */
+
+        startTimer();
+
     }
+
+
+    /* ================================
+       REFRESH QR
+    ================================= */
 
     function resetQRCode() {
-      generateQRCode();
+
+        generateQRCode();
+
     }
 
-    updateRealTime();
+
+    /* ================================
+       KHỞI ĐỘNG
+    ================================= */
+
+    updateTime();
+
     generateQRCode();
-    setInterval(updateRealTime, 1000);
-  </script>
+
+
+    /*
+     * Quan trọng:
+     * Dùng updateTime(), KHÔNG dùng updateRealTime()
+     */
+
+    setInterval(
+        updateTime,
+        1000
+    );
+
+</script>
 </body>
 
 </html>
